@@ -19,6 +19,7 @@ import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         positionText = (TextView) findViewById(R.id.position_text_view);//位置描述
         mapView = (MapView) findViewById(R.id.bmapView);//地图描述
         baiduMap = mapView.getMap();//移动到当前位置
+        baiduMap.setMyLocationEnabled(true);//设置当前位置光标可显
 
         /*权限申请*/
         List<String> permissionList = new ArrayList<>();
@@ -88,6 +90,12 @@ public class MainActivity extends AppCompatActivity {
             baiduMap.animateMapStatus(update);
             isFirstLocate = false;
         }
+        /*使用光标显示当前位置*/
+        MyLocationData.Builder locationBuilder = new MyLocationData.Builder();
+        locationBuilder.latitude(location.getLatitude());
+        locationBuilder.longitude(location.getLongitude());
+        MyLocationData locationData = locationBuilder.build();
+        baiduMap.setMyLocationData(locationData);
     }
 
     private void requestLocation() {
@@ -168,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         mLocationClient.stop();
         mapView.onDestroy();//地图销毁
+        baiduMap.setMyLocationEnabled(false);//设置当前位置光标可显
     }
 
     @Override
