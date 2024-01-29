@@ -14,6 +14,8 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.map.MapView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView positionText;
 
+    private MapView mapView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,15 +35,20 @@ public class MainActivity extends AppCompatActivity {
         * 与旧版本不兼容，请务必确保用于统一隐私政策后，调用setAgreePrivacy接口
         * 以进行SDK初始化之前的准备工作*/
         LocationClient.setAgreePrivacy(true);//需要在LocationClient实例化前设置
-        try {
+        SDKInitializer.setAgreePrivacy(getApplicationContext(),true);//隐私接口
+        try {//新版本实例化LocationClient会抛出Exception异常，需要用try catch语句
             mLocationClient = new LocationClient(getApplicationContext());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        //注册监听器，监听到位置变化时会回调onReceiveLocation方法
         mLocationClient.registerLocationListener(new MyLocationListener());
+        SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
-        positionText = (TextView) findViewById(R.id.position_text_view);
+        positionText = (TextView) findViewById(R.id.position_text_view);//位置描述
+        mapView = (MapView) findViewById(R.id.bmapView);//地图描述
 
+        /*权限申请*/
         List<String> permissionList = new ArrayList<>();
         if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.
                 permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
@@ -133,5 +142,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mLocationClient.stop();
+        mapView.onDestroy();//地图销毁
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        mapView.onResume();//地图唤醒
+    }
+    @Override
+    protected void onPause(){
+        super.onPause();
+        mapView.onPause();//地图暂停
     }
 }
